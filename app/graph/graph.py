@@ -85,6 +85,8 @@ graph.add_conditional_edges(
 )
 
 # ---- memory → memory_subintent ----
+graph.add_edge("memory_node", "memory_subintent_node")
+
 graph.add_conditional_edges(
     "memory_subintent_node",
     lambda state: state["memory_type"],

@@ -1,5 +1,3 @@
-# app/graph/intent_node.py
-
 from app.graph.state import GraphState
 
 def intent_node(state: GraphState):
@@ -9,42 +7,56 @@ def intent_node(state: GraphState):
     text_clean = text.replace(" ", "")
 
     # ------------------------------
-    # CONNECT 범위 확장
+    # CONNECT (복지 연결 + 가족 연결 + 안부 대화)
     # ------------------------------
     connect_keywords = [
+        # 기본 대화
         "안녕", "고마워", "오늘", "날씨", "대화", "응", "그래",
 
         # 복지 연결 관련
-        "배우", "배우고", "배우고싶", "하고싶", "가보고", "가고싶",
-        "취미", "활동", "수업", "강좌", "참여", "프로그램",
+        "배우", "배우고", "배우고싶", "하고싶", "해보고", "가보고", "가고싶",
+        "취미", "관심", "활동", "수업", "강좌", "참여", "프로그램",
 
         # 가족 연결 관련
-        "가족", "아들", "딸", "손주", "남편", "아내",
-        "보고싶", "그립", "전화"
+        "가족", "아들", "딸", "손주", "남편", "아내", "어머니", "아버지",
+        "보고싶", "그립", "전화", "연락"
     ]
 
     if any(kw in text_clean for kw in connect_keywords):
-        intent = "connect"
+        return {**state, "intent": "connect"}
+
 
     # ------------------------------
-    # MEMORY
+    # MEMORY (일정, 알람, 반복 질문)
     # ------------------------------
-    elif any(word in text for word in ["약", "알람", "일정", "기억", "스케줄", "리마인드"]):
-        intent = "memory"
+    memory_keywords = [
+        # 일정 생성/조회/수정 등 공통 키워드
+        "일정", "스케줄", "약속", "기억", "약"
+
+        # 알람 관련
+        "알람", "리마인드", "깨워줘",
+
+        # 반복 질문 관련
+        "다시말", "뭐라했지", "뭐라고했지", "기억안나", "몇시지"
+    ]
+
+    if any(kw in text_clean for kw in memory_keywords):
+        return {**state, "intent": "memory"}
+
 
     # ------------------------------
-    # CARE
+    # CARE (건강/위험/증상)
     # ------------------------------
-    elif any(word in text for word in ["아파", "통증", "혈압", "숨막혀", "기운", "우울", "위험"]):
-        intent = "care"
+    care_keywords = [
+        "아파", "통증", "혈압", "숨막혀", "기운", "우울", "위험",
+        "구급", "119", "어지러", "쓰러질", "심장", "호흡"
+    ]
+
+    if any(kw in text_clean for kw in care_keywords):
+        return {**state, "intent": "care"}
+
 
     # ------------------------------
     # FALLBACK
     # ------------------------------
-    else:
-        intent = "fallback"
-
-    return {
-        **state,
-        "intent": intent
-    }
+    return {**state, "intent": "fallback"}
