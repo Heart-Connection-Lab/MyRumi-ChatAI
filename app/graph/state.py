@@ -1,7 +1,13 @@
-from typing import TypedDict
+from typing import TypedDict, Optional
 
-
-class GraphState(TypedDict):
-    """그래프 전체에서 공유되는 상태"""
+class GraphState(TypedDict, total=False):
     user_input: str
     reply: str
+
+    # Intent Level
+    intent: Optional[str]
+
+    # Subintent Level
+    connect_type: Optional[str]
+    memory_type: Optional[str]
+    care_type: Optional[str]

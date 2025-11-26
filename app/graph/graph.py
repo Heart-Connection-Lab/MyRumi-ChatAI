@@ -25,6 +25,13 @@ from app.graph.memory.subintent.schedule_query_node import schedule_query_node
 from app.graph.memory.subintent.repetitive_question_node import repetitive_question_node
 from app.graph.memory.subintent.memory_fallback_node import memory_fallback_node
 
+# care subintent 노드
+from app.graph.care.subintent.care_subintent_node import care_subintent_node
+from app.graph.care.subintent.emotion_analysis_node import emotion_analysis_node
+from app.graph.care.subintent.health_pattern_node import health_pattern_node
+from app.graph.care.subintent.risk_keyword_node import risk_keyword_node
+from app.graph.care.subintent.care_fallback_node import care_fallback_node
+
 # ---- 그래프 정의 ----
 graph = StateGraph(GraphState)
 
@@ -51,6 +58,14 @@ graph.add_node("schedule_modify_node", schedule_modify_node)
 graph.add_node("schedule_query_node", schedule_query_node)
 graph.add_node("repetitive_question_node", repetitive_question_node)
 graph.add_node("memory_fallback_node", memory_fallback_node)
+
+# Care → Subintent
+graph.add_node("care_subintent_node", care_subintent_node)
+graph.add_node("emotion_analysis_node", emotion_analysis_node)
+graph.add_node("health_pattern_node", health_pattern_node)
+graph.add_node("risk_keyword_node", risk_keyword_node)
+graph.add_node("care_fallback_node", care_fallback_node)
+
 
 # ---- Entry point ----
 graph.set_entry_point("input_node")
@@ -99,10 +114,28 @@ graph.add_conditional_edges(
     }
 )
 
+# ---- care → care_subintent ----
+graph.add_edge("care_node", "care_subintent_node")
+
+graph.add_conditional_edges(
+    "care_subintent_node",
+    lambda state: state["care_type"],
+    {
+        "emotion_positive": "emotion_analysis_node",
+        "emotion_neutral": "emotion_analysis_node",
+        "emotion_energetic": "emotion_analysis_node",
+        "emotion_tired": "emotion_analysis_node",
+        "emotion_anxious": "emotion_analysis_node",
+
+        "pattern": "health_pattern_node",
+        "risk": "risk_keyword_node",
+        "fallback": "care_fallback_node",
+    }
+)
+
+
 
 # ---- finish points ----
-graph.set_finish_point("memory_node")
-graph.set_finish_point("care_node")
 graph.set_finish_point("fallback_node")
 
 graph.set_finish_point("welfare_connect_node")
@@ -114,6 +147,12 @@ graph.set_finish_point("schedule_modify_node")
 graph.set_finish_point("schedule_query_node")
 graph.set_finish_point("repetitive_question_node")
 graph.set_finish_point("memory_fallback_node")
+
+graph.set_finish_point("emotion_analysis_node")
+graph.set_finish_point("health_pattern_node")
+graph.set_finish_point("risk_keyword_node")
+graph.set_finish_point("care_fallback_node")
+
 
 # ---- Compile (그래프 실행) ----
 app_graph = graph.compile()
